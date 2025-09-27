@@ -35,7 +35,7 @@ const Home = () => {
         <img
           src={mainImage.fields.file.url}
           alt={mainImage?.fields?.description || 'Banner'}
-          className="mx-auto"
+          className="w-full"
         />
       )}
 
