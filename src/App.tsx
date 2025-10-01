@@ -10,6 +10,7 @@ import Collections from './pages/Collections';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
+import ProductForm from './pages/ProductForm';
 
 import type { CollectionTodoArtes } from './types/contentfulTypes';
 
@@ -51,6 +52,7 @@ const App = () => {
           path="/collections/:collection?"
           element={<Collection collections={contentfulCollections} />}
         />
+        <Route path="/products/form/:id?" element={<ProductForm />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -28,3 +28,11 @@ export interface UpdateProduct {
   price?: number;
   collection_id?: number;
 }
+
+// Estado inicial para el formulario de productos
+export const productInitialState: CreateProduct = {
+  collection_id: 0,
+  description: '',
+  name: '',
+  price: 0,
+};
