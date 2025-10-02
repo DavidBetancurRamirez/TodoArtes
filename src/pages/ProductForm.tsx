@@ -21,7 +21,10 @@ const ProductForm = () => {
   const [formData, setFormData] = useState<CreateProduct>(productInitialState);
 
   // Estados de la UI
-  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<{
+    value: string;
+    type: 'error' | 'success';
+  } | null>(null);
   const [collections, setCollections] = useState<Collection[]>([]);
 
   // Cargar collections del localStorage
@@ -32,11 +35,17 @@ const ProductForm = () => {
         if (storedCollections && storedCollections.length > 0) {
           setCollections(storedCollections);
         } else {
-          setError('No se encontraron colecciones disponibles');
+          setMessage({
+            type: 'error',
+            value: 'No se encontraron colecciones disponibles',
+          });
         }
       } catch (error) {
         console.error('Error loading collections from localStorage:', error);
-        setError('Error al cargar las colecciones');
+        setMessage({
+          type: 'error',
+          value: 'Error al cargar las colecciones',
+        });
       }
     };
 
@@ -57,7 +66,10 @@ const ProductForm = () => {
           });
         } catch (error) {
           console.error('Error loading product:', error);
-          setError('Error al cargar el producto');
+          setMessage({
+            type: 'error',
+            value: 'Error al cargar el producto',
+          });
         }
       };
       loadProduct();
@@ -83,15 +95,24 @@ const ProductForm = () => {
   // Validar formulario
   const validateForm = (): boolean => {
     if (!formData.name.trim()) {
-      setError('El nombre del producto es requerido');
+      setMessage({
+        type: 'error',
+        value: 'El nombre del producto es requerido',
+      });
       return false;
     }
     if (formData.price <= 0) {
-      setError('El precio debe ser mayor a 0');
+      setMessage({
+        type: 'error',
+        value: 'El precio debe ser mayor a 0',
+      });
       return false;
     }
     if (formData.collection_id <= 0) {
-      setError('Debe seleccionar una colección');
+      setMessage({
+        type: 'error',
+        value: 'Debe seleccionar una colección',
+      });
       return false;
     }
     return true;
@@ -100,7 +121,7 @@ const ProductForm = () => {
   // Manejar envío del formulario
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setMessage(null);
 
     if (!validateForm()) {
       return;
@@ -113,21 +134,30 @@ const ProductForm = () => {
           id: parseInt(id),
         };
         await updateProductAPI(updateData);
+        setMessage({
+          type: 'success',
+          value: 'Producto actualizado exitosamente',
+        });
       } else {
         await createProductAPI(formData);
+        setMessage({
+          type: 'success',
+          value: 'Producto creado exitosamente',
+        });
       }
 
-      // Redirigir después del éxito
-      navigate('/'); // Volver a la página anterior
+      setFormData(productInitialState);
     } catch (error) {
       console.error('Error saving product:', error);
-      setError(
-        isEditing
+      setMessage({
+        type: 'error',
+        value: isEditing
           ? 'Error al actualizar el producto'
           : 'Error al crear el producto',
-      );
+      });
     }
   };
+
   const handleCancel = () => {
     navigate('/');
   };
@@ -138,12 +168,6 @@ const ProductForm = () => {
         <h1 className="text-2xl font-bold mb-6 text-gray-900">
           {isEditing ? 'Editar Producto' : 'Crear Nuevo Producto'}
         </h1>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Nombre del producto */}
@@ -236,7 +260,7 @@ const ProductForm = () => {
           <div className="flex gap-4 pt-4">
             <button
               type="submit"
-              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
             >
               {isEditing ? 'Actualizar Producto' : 'Crear Producto'}
             </button>
@@ -244,11 +268,24 @@ const ProductForm = () => {
             <button
               type="button"
               onClick={handleCancel}
-              className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              className="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 cursor-pointer"
             >
-              Cancelar
+              Eliminar
             </button>
           </div>
+
+          {/* Mensajes */}
+          {message && (
+            <div
+              className={`px-4 py-3 rounded mt-4 ${
+                message.type === 'error'
+                  ? 'bg-red-100 border border-red-400 text-red-700'
+                  : 'bg-green-100 border border-green-400 text-green-700'
+              }`}
+            >
+              {message.value}
+            </div>
+          )}
         </form>
       </div>
     </div>

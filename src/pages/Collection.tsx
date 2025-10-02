@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import CollectionNotFound from '../components/CollectionNotFound';
 
@@ -11,6 +11,8 @@ import type { Collection as ApiCollection } from '../types/collection';
 
 import { routes } from '../utils/routes';
 import { getCollections } from '../utils/localStorage';
+import { Edit, Trash } from 'lucide-react';
+import { deleteProductAPI } from '../utils/api';
 
 interface CollectionProps {
   collections: CollectionTodoArtes['fields'][];
@@ -20,6 +22,8 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
   const { collection } = useParams<{ collection?: string }>();
   const [products, setProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   const foundCollection = collections.find((item) => item.value === collection);
 
@@ -57,6 +61,18 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
   if (!foundCollection) {
     return <CollectionNotFound />;
   }
+
+  const handleDelete = async (productId: number) => {
+    try {
+      await deleteProductAPI(productId);
+      setProducts((prevProducts) =>
+        prevProducts.filter((product) => product.id !== productId),
+      );
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      setError('Error deleting product. Please try again later.');
+    }
+  };
 
   return (
     <div>
@@ -102,6 +118,7 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
                     className="w-full h-full object-cover"
                   />
                 </div>
+
                 <div className="p-4">
                   <h5 className="font-semibold text-lg mb-2 line-clamp-2">
                     {product.name}
@@ -114,6 +131,27 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
                   <p className="text-xl font-bold text-green-600">
                     ${product.price.toLocaleString()}
                   </p>
+                </div>
+
+                <div className="flex space-x-2 my-2 mr-2 justify-end">
+                  {/* Edit icon */}
+                  <button
+                    type="button"
+                    title="Editar"
+                    onClick={() => navigate(`/products/form/${product.id}`)}
+                    className="rounded hover:bg-gray-100 cursor-pointer"
+                  >
+                    <Edit color="blue" />
+                  </button>
+                  {/* Delete icon */}
+                  <button
+                    type="button"
+                    title="Eliminar"
+                    onClick={() => handleDelete(product.id)}
+                    className="rounded hover:bg-gray-100 cursor-pointer"
+                  >
+                    <Trash color="red" />
+                  </button>
                 </div>
               </div>
             ))}
