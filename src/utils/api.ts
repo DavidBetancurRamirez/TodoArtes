@@ -114,3 +114,29 @@ export const deleteProductAPI = async (id: number): Promise<void> => {
     throw error;
   }
 };
+
+/**
+ * Crea o actualiza un cliente en la API
+ * @param client - Datos del cliente (email, name, sub)
+ * @returns Promise con el cliente creado/actualizado
+ */
+export const createOrUpdateUserAPI = async (client: {
+  email: string;
+  name: string;
+  sub: string;
+}): Promise<void> => {
+  try {
+    const response = await axiosInstance.post(routes.clients, client);
+
+    if (!response?.data) {
+      throw new Error(
+        'Error al crear/actualizar el cliente: respuesta vacía del servidor',
+      );
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error('Error creating/updating client in API:', error);
+    throw error;
+  }
+};
