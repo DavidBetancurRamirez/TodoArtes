@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { useAuth } from 'react-oidc-context';
 
 import CollectionNotFound from '../components/CollectionNotFound';
+import Product from '../components/Product';
 
 import axiosInstance from '../lib/axiosConfig';
 
 import type { CollectionTodoArtes } from '../types/contentfulTypes';
-import type { Product } from '../types/product';
+import type { Product as ProductType } from '../types/product';
 import type { Collection as ApiCollection } from '../types/collection';
+import type { Rating } from '../types/rating';
 
 import { routes } from '../utils/routes';
 import { getCollections } from '../utils/localStorage';
-import { Edit, Trash } from 'lucide-react';
 import { deleteProductAPI } from '../utils/api';
 
 interface CollectionProps {
@@ -20,12 +22,13 @@ interface CollectionProps {
 
 const Collection: React.FC<CollectionProps> = ({ collections }) => {
   const { collection } = useParams<{ collection?: string }>();
-  const [products, setProducts] = useState<Product[]>([]);
+  const auth = useAuth();
+  const [products, setProducts] = useState<ProductType[]>([]);
+  const [ratings, setRatings] = useState<Rating[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const navigate = useNavigate();
-
   const foundCollection = collections.find((item) => item.value === collection);
+  const clientSub = auth.user?.profile?.sub as string;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -58,6 +61,25 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
     fetchProducts();
   }, [foundCollection]);
 
+  useEffect(() => {
+    const fetchRatings = async () => {
+      if (!clientSub) return;
+
+      try {
+        const response = await axiosInstance.get(routes.ratings, {
+          params: { client_sub: clientSub },
+        });
+
+        setRatings(response.data);
+      } catch (err) {
+        console.error('Error fetching ratings:', err);
+        setRatings([]);
+      }
+    };
+
+    fetchRatings();
+  }, [clientSub]);
+
   if (!foundCollection) {
     return <CollectionNotFound />;
   }
@@ -72,6 +94,37 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
       console.error('Error deleting product:', err);
       setError('Error deleting product. Please try again later.');
     }
+  };
+
+  const handleRatingChange = (productId: number, rating: number) => {
+    setRatings((prevRatings) => {
+      const existingRatingIndex = prevRatings.findIndex(
+        (r) => r.product_id === productId,
+      );
+
+      if (existingRatingIndex >= 0) {
+        const updatedRatings = [...prevRatings];
+        updatedRatings[existingRatingIndex] = {
+          ...updatedRatings[existingRatingIndex],
+          rating,
+        };
+        return updatedRatings;
+      } else {
+        return [
+          ...prevRatings,
+          {
+            client_sub: clientSub,
+            product_id: productId,
+            rating,
+          },
+        ];
+      }
+    });
+  };
+
+  const getProductRating = (productId: number): number => {
+    const rating = ratings.find((r) => r.product_id === productId);
+    return rating?.rating || 0;
   };
 
   return (
@@ -107,53 +160,16 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
             {products.map((product) => (
-              <div
+              <Product
                 key={product.id}
-                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden"
-              >
-                <div className="aspect-square bg-gray-200 overflow-hidden">
-                  <img
-                    src={foundCollection?.image?.fields?.file?.url}
-                    alt={foundCollection.label}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                <div className="p-4">
-                  <h5 className="font-semibold text-lg mb-2 line-clamp-2">
-                    {product.name}
-                  </h5>
-                  {product.description && (
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-                      {product.description}
-                    </p>
-                  )}
-                  <p className="text-xl font-bold text-green-600">
-                    ${product.price.toLocaleString()}
-                  </p>
-                </div>
-
-                <div className="flex space-x-2 my-2 mr-2 justify-end">
-                  {/* Edit icon */}
-                  <button
-                    type="button"
-                    title="Editar"
-                    onClick={() => navigate(`/products/form/${product.id}`)}
-                    className="rounded hover:bg-gray-100 cursor-pointer"
-                  >
-                    <Edit color="blue" />
-                  </button>
-                  {/* Delete icon */}
-                  <button
-                    type="button"
-                    title="Eliminar"
-                    onClick={() => handleDelete(product.id)}
-                    className="rounded hover:bg-gray-100 cursor-pointer"
-                  >
-                    <Trash color="red" />
-                  </button>
-                </div>
-              </div>
+                product={product}
+                imageUrl={foundCollection?.image?.fields?.file?.url}
+                imageAlt={foundCollection.label}
+                clientSub={clientSub}
+                currentRating={getProductRating(product.id)}
+                onDelete={handleDelete}
+                onRatingChange={handleRatingChange}
+              />
             ))}
           </div>
         )}
