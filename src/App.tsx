@@ -1,6 +1,7 @@
 import { Route, Routes } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from 'react-oidc-context';
+import { VapiWidget } from '@vapi-ai/client-sdk-react';
 
 import Layout from './components/Layout';
 
@@ -21,6 +22,9 @@ import type { Rating } from './types/rating';
 import { collectionsExist, saveCollections } from './utils/localStorage';
 import { fetchCollectionsFromAPI } from './utils/api';
 import { routes } from './utils/routes';
+
+const PUBLIC_KEY = import.meta.env.VITE_VAPI_PUBLIC_KEY;
+const ASSISTANT_ID = import.meta.env.VITE_VAPI_ASSISTANT_ID;
 
 const App = () => {
   const { data: contentfulCollections } =
@@ -137,6 +141,22 @@ const App = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
+
+      <VapiWidget
+        publicKey={PUBLIC_KEY}
+        assistantId={ASSISTANT_ID}
+        mode="hybrid"
+        position="bottom-right"
+        theme="dark"
+        accentColor="#1c476d"
+        title="TodoArtes AI"
+        chatPlaceholder="Pregúntame por tus recomendaciones..."
+        chatFirstMessage="¡Hola! Soy tu asistente de TodoArtes 🎨. Puedo recomendarte productos según tus gustos y mostrarte sus detalles (nombre, descripción y precio). Pregúntame por tus recomendaciones o productos favoritos, ¡puedes hablarme o escribirme!"
+        voiceShowTranscript={true}
+        assistantOverrides={{
+          variableValues: { client_sub: clientSub },
+        }}
+      />
     </Layout>
   );
 };
