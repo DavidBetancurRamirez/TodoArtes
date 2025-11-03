@@ -36,12 +36,12 @@ const Product: React.FC<ProductProps> = ({
 
     try {
       setIsSubmitting(true);
+      onRatingChange(product.id, rating);
       await axiosInstance.post(routes.ratings, {
         client_sub: clientSub,
         product_id: product.id,
         rating: rating,
       });
-      onRatingChange(product.id, rating);
     } catch (error) {
       console.error('Error submitting rating:', error);
     } finally {
@@ -50,7 +50,7 @@ const Product: React.FC<ProductProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
+    <div className="bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden hover:-translate-y-2">
       <div className="aspect-square bg-gray-200 overflow-hidden">
         <img
           src={imageUrl}
