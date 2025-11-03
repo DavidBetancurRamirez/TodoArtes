@@ -3,4 +3,5 @@ export const routes = {
   collections: '/collections',
   products: '/products',
   ratings: '/ratings',
+  recommendations: '/recommendations',
 };

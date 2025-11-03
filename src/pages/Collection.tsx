@@ -10,7 +10,6 @@ import axiosInstance from '../lib/axiosConfig';
 import type { CollectionTodoArtes } from '../types/contentfulTypes';
 import type { Product as ProductType } from '../types/product';
 import type { Collection as ApiCollection } from '../types/collection';
-import type { Rating } from '../types/rating';
 
 import { routes } from '../utils/routes';
 import { getCollections } from '../utils/localStorage';
@@ -18,13 +17,18 @@ import { deleteProductAPI } from '../utils/api';
 
 interface CollectionProps {
   collections: CollectionTodoArtes['fields'][];
+  onRatingChange: (productId: number, rating: number) => void;
+  getProductRating: (productId: number) => number;
 }
 
-const Collection: React.FC<CollectionProps> = ({ collections }) => {
+const Collection: React.FC<CollectionProps> = ({
+  collections,
+  onRatingChange,
+  getProductRating,
+}) => {
   const { collection } = useParams<{ collection?: string }>();
   const auth = useAuth();
   const [products, setProducts] = useState<ProductType[]>([]);
-  const [ratings, setRatings] = useState<Rating[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const foundCollection = collections.find((item) => item.value === collection);
@@ -61,25 +65,6 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
     fetchProducts();
   }, [foundCollection]);
 
-  useEffect(() => {
-    const fetchRatings = async () => {
-      if (!clientSub) return;
-
-      try {
-        const response = await axiosInstance.get(routes.ratings, {
-          params: { client_sub: clientSub },
-        });
-
-        setRatings(response.data);
-      } catch (err) {
-        console.error('Error fetching ratings:', err);
-        setRatings([]);
-      }
-    };
-
-    fetchRatings();
-  }, [clientSub]);
-
   if (!foundCollection) {
     return <CollectionNotFound />;
   }
@@ -94,37 +79,6 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
       console.error('Error deleting product:', err);
       setError('Error deleting product. Please try again later.');
     }
-  };
-
-  const handleRatingChange = (productId: number, rating: number) => {
-    setRatings((prevRatings) => {
-      const existingRatingIndex = prevRatings.findIndex(
-        (r) => r.product_id === productId,
-      );
-
-      if (existingRatingIndex >= 0) {
-        const updatedRatings = [...prevRatings];
-        updatedRatings[existingRatingIndex] = {
-          ...updatedRatings[existingRatingIndex],
-          rating,
-        };
-        return updatedRatings;
-      } else {
-        return [
-          ...prevRatings,
-          {
-            client_sub: clientSub,
-            product_id: productId,
-            rating,
-          },
-        ];
-      }
-    });
-  };
-
-  const getProductRating = (productId: number): number => {
-    const rating = ratings.find((r) => r.product_id === productId);
-    return rating?.rating || 0;
   };
 
   return (
@@ -168,7 +122,7 @@ const Collection: React.FC<CollectionProps> = ({ collections }) => {
                 clientSub={clientSub}
                 currentRating={getProductRating(product.id)}
                 onDelete={handleDelete}
-                onRatingChange={handleRatingChange}
+                onRatingChange={onRatingChange}
               />
             ))}
           </div>

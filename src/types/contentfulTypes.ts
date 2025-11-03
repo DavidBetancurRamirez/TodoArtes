@@ -26,6 +26,7 @@ export type StoreTodoArtes = ContentfulModel<{
 
 export type CollectionTodoArtes = ContentfulModel<{
   description?: string;
+  id: number;
   image?: ImageType;
   label: string;
   value: string;
