@@ -6,6 +6,8 @@ import Layout from './components/Layout';
 
 import { useContentful } from './hooks/useContentful';
 
+import axiosInstance from './lib/axiosConfig';
+
 import Collection from './pages/Collection';
 import Collections from './pages/Collections';
 import Home from './pages/Home';
@@ -18,7 +20,6 @@ import type { Rating } from './types/rating';
 
 import { collectionsExist, saveCollections } from './utils/localStorage';
 import { fetchCollectionsFromAPI } from './utils/api';
-import axiosInstance from './lib/axiosConfig';
 import { routes } from './utils/routes';
 
 const App = () => {
@@ -99,14 +100,19 @@ const App = () => {
     return rating?.rating || 0;
   };
 
+  // Sort collections by id (assuming id is a number)
+  const sortedCollections = [...contentfulCollections].sort(
+    (a, b) => a.id - b.id,
+  );
+
   return (
-    <Layout collections={contentfulCollections}>
+    <Layout collections={sortedCollections}>
       <Routes>
         <Route
           path="/"
           element={
             <Home
-              collections={contentfulCollections}
+              collections={sortedCollections}
               ratings={ratings}
               onRatingChange={handleRatingChange}
               getProductRating={getProductRating}
@@ -115,13 +121,13 @@ const App = () => {
         />
         <Route
           path="/collections"
-          element={<Collections collections={contentfulCollections} />}
+          element={<Collections collections={sortedCollections} />}
         />
         <Route
           path="/collections/:collection?"
           element={
             <Collection
-              collections={contentfulCollections}
+              collections={sortedCollections}
               onRatingChange={handleRatingChange}
               getProductRating={getProductRating}
             />
