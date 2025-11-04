@@ -143,15 +143,15 @@ const App = () => {
       </Routes>
 
       <VapiWidget
-        publicKey={PUBLIC_KEY}
+        accentColor="#1c476d"
         assistantId={ASSISTANT_ID}
+        chatFirstMessage="¡Hola! Soy tu asistente de TodoArtes 🎨. Puedo recomendarte productos según tus gustos y mostrarte sus detalles (nombre, descripción y precio). ¡Pregúntame por tus recomendaciones!"
+        chatPlaceholder="Pregúntame por tus recomendaciones..."
         mode="hybrid"
         position="bottom-right"
+        publicKey={PUBLIC_KEY}
         theme="dark"
-        accentColor="#1c476d"
         title="TodoArtes AI"
-        chatPlaceholder="Pregúntame por tus recomendaciones..."
-        chatFirstMessage="¡Hola! Soy tu asistente de TodoArtes 🎨. Puedo recomendarte productos según tus gustos y mostrarte sus detalles (nombre, descripción y precio). Pregúntame por tus recomendaciones o productos favoritos, ¡puedes hablarme o escribirme!"
         voiceShowTranscript={true}
         assistantOverrides={{
           variableValues: { client_sub: clientSub },
