@@ -1,4 +1,4 @@
-import { Handbag, Search, UserRound } from 'lucide-react';
+import { LibraryBig, PlusCircle, UserRound } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 import { useContentful } from '../hooks/useContentful';
@@ -7,7 +7,7 @@ import { trackEvent } from '../lib/analytics';
 
 import type {
   CollectionTodoArtes,
-  HeaderTodoArtes,
+  UtilsTodoArtes,
 } from '../types/contentfulTypes';
 
 interface HeaderProps {
@@ -15,7 +15,7 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ collections }) => {
-  const { data } = useContentful<HeaderTodoArtes>('header');
+  const { data } = useContentful<UtilsTodoArtes>('utils');
   const { logo } = data[0] ?? {};
 
   const location = useLocation();
@@ -72,9 +72,30 @@ const Header: React.FC<HeaderProps> = ({ collections }) => {
       </div>
 
       <div className="flex space-x-4">
-        <span className="cursor-pointer">
-          <Search size={18} />
-        </span>
+        <Link
+          to={`/collections`}
+          onClick={() =>
+            trackEvent({
+              action: 'Click Nav Link',
+              category: 'Navbar',
+              label: 'Collections',
+            })
+          }
+        >
+          <LibraryBig size={18} />
+        </Link>
+        <Link
+          to={`/products/form`}
+          onClick={() =>
+            trackEvent({
+              action: 'Click Nav Link',
+              category: 'Navbar',
+              label: 'Create Product',
+            })
+          }
+        >
+          <PlusCircle size={18} />
+        </Link>
         <Link
           to={`/profile`}
           onClick={() =>
@@ -87,9 +108,6 @@ const Header: React.FC<HeaderProps> = ({ collections }) => {
         >
           <UserRound size={18} />
         </Link>
-        <span className="cursor-pointer">
-          <Handbag size={18} />
-        </span>
       </div>
     </nav>
   );

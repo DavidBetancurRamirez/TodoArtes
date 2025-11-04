@@ -54,8 +54,8 @@ const Accordion: React.FC<AccordionProps> = ({
             {address && <p>{address}</p>}
             {location && <p>{location}</p>}
             {city && <p>{city}</p>}
-            {phone && <p>Telefono: {phone}</p>}
-            {schedule && <p>Horarios: {schedule}</p>}
+            {phone && <p>{phone}</p>}
+            {schedule && <p>{schedule}</p>}
           </div>
         </div>
       )}

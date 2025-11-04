@@ -15,13 +15,11 @@ interface UseContentfulResult<TFields> {
 
 /**
  * Hook para traer entries de Contentful con tipado seguro
- * @param contentType - El ID del content type en Contentful
- * @param index - La posición del entry a retornar (por defecto 0)
+ * @param contentType - El ID del content type en Contentful¿
  * @param shouldReverse - Si se debe invertir el orden de los entries (por defecto true)
  */
 export function useContentful<T extends EntrySkeletonType>(
   contentType: string,
-  index: number = 0,
   shouldReverse: boolean = true,
 ): UseContentfulResult<T['fields']> {
   const [data, setData] = useState<T['fields'][]>([]);
@@ -48,7 +46,7 @@ export function useContentful<T extends EntrySkeletonType>(
     };
 
     fetchData();
-  }, [contentType, index, shouldReverse]);
+  }, [contentType, shouldReverse]);
 
   return { data, error, loading };
 }
