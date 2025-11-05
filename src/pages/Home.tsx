@@ -44,9 +44,11 @@ const Home = ({
   const [productsRecommended, setProductsRecommended] = useState<ProductType[]>(
     [],
   );
+  const [loadingRecommendations, setLoadingRecommendations] = useState(true);
 
   useEffect(() => {
     const getRecommendations = async () => {
+      setLoadingRecommendations(true);
       try {
         const recommendationsData = await axiosInstance.get(
           routes.recommendations,
@@ -86,6 +88,8 @@ const Home = ({
       } catch (error) {
         console.error('Error fetching recommendations:', error);
         setProductsRecommended([]);
+      } finally {
+        setLoadingRecommendations(false);
       }
     };
 
@@ -140,7 +144,9 @@ const Home = ({
         </div>
 
         <div className="p-8">
-          {productsRecommended.length === 0 ? (
+          {loadingRecommendations ? (
+            <Loader fullScreen={false} />
+          ) : productsRecommended.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-gray-600 text-lg">
                 Por el momento no hay recomendaciones disponibles.

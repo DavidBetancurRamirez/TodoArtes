@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useAuth } from 'react-oidc-context';
 
 import CollectionNotFound from '../components/CollectionNotFound';
+import Loader from '../components/Loader';
 import Product from '../components/Product';
 
 import axiosInstance from '../lib/axiosConfig';
@@ -30,6 +31,7 @@ const Collection: React.FC<CollectionProps> = ({
   const auth = useAuth();
   const [products, setProducts] = useState<ProductType[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const foundCollection = collections.find((item) => item.value === collection);
   const clientSub = auth.user?.profile?.sub as string;
@@ -38,6 +40,7 @@ const Collection: React.FC<CollectionProps> = ({
     const fetchProducts = async () => {
       if (!foundCollection) return;
 
+      setLoading(true);
       try {
         setError(null);
 
@@ -59,6 +62,8 @@ const Collection: React.FC<CollectionProps> = ({
         console.error('Error fetching products:', err);
         setProducts([]);
         setError('Error fetching products. Please try again later.');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -101,7 +106,9 @@ const Collection: React.FC<CollectionProps> = ({
 
       {/* Products Grid */}
       <div className="p-8">
-        {error ? (
+        {loading ? (
+          <Loader fullScreen={false} />
+        ) : error ? (
           <div className="text-center py-12">
             <p className="text-red-600 text-lg">{error}</p>
           </div>
